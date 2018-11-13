@@ -1,0 +1,14 @@
+[app]
+name = XX XX
+short_name = XX
+email = x@xxx.xom
+days = 7
+; define which day is the first day of a week(0 = Sun, 1 = Mon, ...)
+weekday_start = 1
+; report for which week(0 = this week; 1 = last week, ...)
+week_before = 1
+
+[phabricator]
+username = zhangsan
+url = http://{domain}.com:{port}/
+api_token = api-xxxxxxxxxxxxxxxxxxxxxxxxxxxx
