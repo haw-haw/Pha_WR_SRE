@@ -1,4 +1,4 @@
-# wr_pha_sre
+# Pha_WR_SRE
 Generate weekly report from phabricator for SRE.
 
 # installation
@@ -9,7 +9,7 @@ Generate weekly report from phabricator for SRE.
 git clone https://github.com/phacility/libphutil.git
 ```
 
-## install wr_pha_sre
+## install Pha_WR_SRE
 
 ```bash
 git clone git@github.com:haw-haw/Pha_WR_SRE.git
@@ -18,7 +18,7 @@ git clone git@github.com:haw-haw/Pha_WR_SRE.git
 # usage
 
 ```bash
-cd wr_pha_sre;
+cd Pha_WR_SRE;
 cp config.ini.example config.ini;
 vim config.ini;
 # modify config.ini as your env
