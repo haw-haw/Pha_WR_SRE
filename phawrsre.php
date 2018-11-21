@@ -34,12 +34,20 @@ $start = (new DateTime())->setISODate($year, $week, $offset)->setTime(0, 0, 0);
 $end = (new DateTime())->setISODate($year, $week, $offset + 6)->setTime(23, 59, 59);
 
 $subject = sprintf(
-    'Work report Week %s, %s (%s ~ %s) for %s',
+    'Workly report of Week %s, %s (%s ~ %s) for %s',
     $week,
     $year,
     $start->format('m.d'),
     $end->format('m.d'),
     $user_realName
+);
+
+$email_subject = sprintf(
+    'Week %s, %s (%s ~ %s)',
+    $week,
+    $year,
+    $start->format('m.d'),
+    $end->format('m.d')
 );
 
 $output = [
@@ -78,9 +86,23 @@ foreach ($tasks as $key => $task)
     }
 }
 
-echo sprintf(
+$message = sprintf(
     "%s\n\nCompleted:\n%s\nOngoing:\n%s\n",
     $output['subject'],
     implode("", $output['completed']),
     implode("", $output['ongoing'])
 );
+
+print $message;
+
+$email_subject = "=?UTF-8?B?". base64_encode("$email_subject"). "?=";
+$from_email = $config['email'];
+$headers = "From: $from_email\r\n". 
+        "MIME-Version: 1.0". "\r\n". 
+        "Content-type: text/plain; charset=UTF-8". "\r\n";
+if ($config['send2on']) {
+    $re = mail($config['email4on'], $email_subject, $message, $headers, " -f $from_email");
+    if (!$re) {
+        echo error_get_last()['message'];
+    }
+}

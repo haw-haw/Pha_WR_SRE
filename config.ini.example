@@ -2,6 +2,12 @@
 name = XX XX
 short_name = XX
 email = x@xxx.xom
+; enable the feature of sending report to onenote or not
+send2on = false
+email4on = me@onenote.com
+; enable the feature of sending report to evernote or not, doesn't complete
+send2en = false
+email4en = me@onenote.com
 days = 7
 ; define which day is the first day of a week(0 = Sun, 1 = Mon, ...)
 weekday_start = 1
