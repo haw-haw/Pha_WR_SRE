@@ -14,6 +14,8 @@ git clone https://github.com/phacility/libphutil.git
 ```bash
 git clone git@github.com:haw-haw/Pha_WR_SRE.git
 ```
+## onenote setting(optional)
+goto http://www.onenote.com/EmailSettings to setting which section to save the note and which email address can send email.
 
 # usage
 
