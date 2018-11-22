@@ -100,8 +100,16 @@ $from_email = $config['email'];
 $headers = "From: $from_email\r\n". 
         "MIME-Version: 1.0". "\r\n". 
         "Content-type: text/plain; charset=UTF-8". "\r\n";
+
 if ($config['send2on']) {
     $re = mail($config['email4on'], $email_subject, $message, $headers, " -f $from_email");
+    if (!$re) {
+        echo error_get_last()['message'];
+    }
+}
+
+if ($config['send2en']) {
+    $re = mail($config['email4en'], $email_subject, $message, $headers, " -f $from_email");
     if (!$re) {
         echo error_get_last()['message'];
     }
