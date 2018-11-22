@@ -8,6 +8,8 @@ email4on = me@onenote.com
 ; enable the feature of sending report to evernote or not
 send2en = false
 email4en = zhangsan.xxxxxx@m.evernote.com
+; enable to write report to phabricator phame(blog) or not
+write2phame = false
 days = 7
 ; define which day is the first day of a week(0 = Sun, 1 = Mon, ...)
 weekday_start = 1
@@ -18,3 +20,5 @@ week_before = 1
 username = zhangsan
 url = http://{domain}.com:{port}/
 api_token = api-xxxxxxxxxxxxxxxxxxxxxxxxxxxx
+; phid of the blog, must be created before
+phid_blog = PHID-BLOG-xxxxxxxxxxxxxxxxxxxxxx
