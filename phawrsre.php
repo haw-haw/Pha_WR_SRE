@@ -67,7 +67,7 @@ foreach ($tasks['data'] as $key => $task)
     $dateModified = new DateTime(date("Y-m-d H:i:s", $task['dateModified']));
 
     $outputString = sprintf(
-        "# %s(T%s)\n",
+        "- %s(T%s)\n",
         $task['fields']['name'],
         $task['id']
     );
@@ -100,7 +100,7 @@ foreach ($taskopen as $task_id => $task_title) {
     foreach ($trans[$task_id] as $key => $tran) {
         if ($tran['dateCreated'] > $start_int and $tran['dateCreated'] < $end_int) {
             $output['ongoing'][] = sprintf(
-                "# %s(T%s)\n",
+                "- %s(T%s)\n",
                 $task_title,
                 $task_id
             );
@@ -110,7 +110,7 @@ foreach ($taskopen as $task_id => $task_title) {
 }
 
 $message = sprintf(
-    "%s\n\nCompleted:\n%s\nOngoing:\n%s\n",
+    "= %s\n\n=== Completed:\n%s\n=== Ongoing:\n%s\n",
     $output['subject'],
     implode("", $output['completed']),
     implode("", $output['ongoing'])
