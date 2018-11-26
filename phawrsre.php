@@ -4,13 +4,13 @@ require_once '../libphutil/src/__phutil_library_init__.php';
 
 date_default_timezone_set('Asia/Shanghai');
 
+$str_phid_post = 'PHID-POST-';
 $config = parse_ini_file('config.ini');
+$client = (new ConduitClient($config['url']))->setConduitToken($config['api_token']);
 
 $api_parameters_user = [
     'usernames'    => [$config['username']],
 ];
-
-$client = (new ConduitClient($config['url']))->setConduitToken($config['api_token']);
 $user = $client->callMethodSynchronous('user.query', $api_parameters_user);
 $user_phid = $user[0]['phid'];
 $user_realName = $user[0]['realName'];
@@ -51,44 +51,40 @@ $output = [
     'other'       => []
 ];
 
-$api_parameters_task_closed = [
+$api_parameters_task = [
     'constraints'   =>  [
-        "assigned"  =>  [$user_phid],
-        "statuses"  =>  [
-            "resolved"
+        "assigned"  =>  [
+            $user_phid
         ],
-        "closedStart"   =>  $start_int,
-        "closedEnd" =>  $end_int
-    ]
-];
-$tasks = $client->callMethodSynchronous('maniphest.search', $api_parameters_task_closed);
-foreach ($tasks['data'] as $key => $task)
-{
-    $dateModified = new DateTime(date("Y-m-d H:i:s", $task['dateModified']));
-
-    $outputString = sprintf(
-        "- %s(T%s)\n",
-        $task['fields']['name'],
-        $task['id']
-    );
-
-    $output['completed'][] = $outputString;
-}
-
-$api_parameters_task_open = [
-    'constraints'   =>  [
-        "assigned"  =>  [$user_phid],
-        "statuses"  =>  ["open"],
         "modifiedStart" =>  $start_int,
-        "createdEnd"    =>  $end_int
+        "createdEnd"    =>  $end_int,
     ]
 ];
-
-$tasks = $client->callMethodSynchronous('maniphest.search', $api_parameters_task_open);
+$tasks = $client->callMethodSynchronous('maniphest.search', $api_parameters_task);
 $taskopen = array();
 foreach ($tasks['data'] as $key => $task)
 {
-    $taskopen[$task['id']] = $task['fields']['name'];
+    if ($task['fields']['status']['value'] == "resolved") { 
+        if ($task['fields']['dateClosed'] <= $start_int) {
+            // drop it
+        } elseif ($task['fields']['dateClosed'] < $end_int) {
+            $output['completed'][] = sprintf(
+                "- %s(T%s)\n",
+                $task['fields']['name'],
+                $task['id']
+            );
+        } else {
+            $taskopen[$task['id']] = [
+                $task['fields']['name'], 
+                $task['fields']['status']['value']
+            ];
+        }
+    } else {
+        $taskopen[$task['id']] = [
+            $task['fields']['name'], 
+            $task['fields']['status']['value']
+        ];
+    }
 }
 
 $api_parameters_tran = [
@@ -96,24 +92,45 @@ $api_parameters_tran = [
 ];
 $trans = $client->callMethodSynchronous('maniphest.gettasktransactions', $api_parameters_tran);
 
-foreach ($taskopen as $task_id => $task_title) {
+foreach ($taskopen as $task_id => $task_title_status) {
     foreach ($trans[$task_id] as $key => $tran) {
-        if ($tran['dateCreated'] > $start_int and $tran['dateCreated'] < $end_int) {
-            $output['ongoing'][] = sprintf(
-                "- %s(T%s)\n",
-                $task_title,
-                $task_id
-            );
+        if (
+            $tran['dateCreated'] > $start_int 
+        and 
+            $tran['dateCreated'] < $end_int
+        ) {
+            if (substr($tran['newValue'][0], 0, strlen($str_phid_post)) === $str_phid_post) {
+                continue;
+            }
+            if (
+                $task_title_status[1] == "resolved"
+            or
+                $task_title_status[1] == "open"
+            ) {
+                $output['ongoing'][] = sprintf(
+                    "- %s(T%s)\n",
+                    $task_title_status[0],
+                    $task_id
+                );
+            } else {
+                $output['other'][] = sprintf(
+                    "- %s(T%s, %s)\n",
+                    $task_title_status[0],
+                    $task_id, 
+                    $task_title_status[1]
+                );
+            }
             break;
         }
     }
 }
 
 $message = sprintf(
-    "= %s\n\n=== Completed:\n%s\n=== Ongoing:\n%s\n",
+    "= %s\n\n=== Completed:\n%s\n=== Ongoing:\n%s\n=== other:\n%s\n",
     $output['subject'],
     implode("", $output['completed']),
-    implode("", $output['ongoing'])
+    implode("", $output['ongoing']),
+    implode("", $output['other'])
 );
 
 print $message;
@@ -124,6 +141,7 @@ $headers = "From: $from_email\r\n".
         "MIME-Version: 1.0". "\r\n". 
         "Content-type: text/plain; charset=UTF-8". "\r\n";
 
+# send note to onenote by email
 if ($config['send2on']) {
     $re = mail($config['email4on'], $email_subject_encode, $message, $headers, " -f $from_email");
     if (!$re) {
@@ -131,6 +149,7 @@ if ($config['send2on']) {
     }
 }
 
+# send note to evernote by email
 if ($config['send2en']) {
     $re = mail($config['email4en'], $email_subject_encode, $message, $headers, " -f $from_email");
     if (!$re) {
@@ -138,6 +157,7 @@ if ($config['send2en']) {
     }
 }
 
+# write to phabricator phame(blog)
 if ($config['write2phame']) {
     $blog_phid = $config['phid_blog'];
     $api_parameters_blog = [
