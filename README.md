@@ -27,4 +27,17 @@ vim config.ini;
 php phawrsre.php;
 ```
 
+# special in macos
+
+```bash
+cp gs.theyan.phawrsre.plist.example ~/Library/LaunchAgents/gs.theyan.phawrsre.plist
+launchctl load gs.theyan.phawrsre.plist
+```
+
+```bash
+# start service manually
+cd ~/Library/LaunchAgents/
+launchctl start GenerateReport.job
+```
+
 Thanks to https://github.com/DONSA/phabriport.git
